@@ -1,9 +1,10 @@
-#include<SPI.h>
-#include<MFRC522.h>
-#include<LiquidCrystal_I2C.h>
+##include <SPI.h>
+#include <MFRC522.h>
+#include <LiquidCrystal_I2C.h>
 
 #define SS_PIN 5
 #define RST_PIN 17
+#define RELAY_PIN 2  // Usamos el pin 2
 
 MFRC522 rfid(SS_PIN, RST_PIN);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -13,36 +14,25 @@ int contador_rechazos = 0;
 void setup() {
   Serial.begin(115200);
 
-  // Pin del relé
-  pinMode(4, OUTPUT);
-  digitalWrite(4, LOW); 
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
 
-  // Inicialización de la pantalla LCD
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
   lcd.print("Bienvenido");
 
-  // Inicialización del bus SPI
   SPI.begin();
   rfid.PCD_Init();
 }
 
 void loop() {
-  // Fuerza la reinicialización del lector para asegurar la lectura en Wokwi
   rfid.PCD_Init();
 
-  // Revisar si hay tarjeta presente
-  if (!rfid.PICC_IsNewCardPresent()) {
+  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
     return;
   }
 
-  // Leer la tarjeta
-  if (!rfid.PICC_ReadCardSerial()) {
-    return;
-  }
-
-  // Obtener UID
   String tarjetaLeida = "";
   for (byte i = 0; i < rfid.uid.size; i++) {
     if (rfid.uid.uidByte[i] < 0x10) {
@@ -52,18 +42,22 @@ void loop() {
   }
   tarjetaLeida.toUpperCase();
 
-  Serial.print("Tarjeta detectada: ");
+  Serial.print("UID leido: ");
   Serial.println(tarjetaLeida);
 
-  // Validar acceso (Azul '01020304' o Amarilla '55667788')
-  if (tarjetaLeida == "01020304" || tarjetaLeida == "55667788") {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("UID: " + tarjetaLeida);
+  delay(1200);
+
+  if (tarjetaLeida == "01020304" || tarjetaLeida == "55667788" || tarjetaLeida == "E385381A") {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Acceso Permitido");
     
-    digitalWrite(4, HIGH);
+    digitalWrite(RELAY_PIN, HIGH);
     delay(3000);
-    digitalWrite(4, LOW);
+    digitalWrite(RELAY_PIN, LOW);
   } else {
     contador_rechazos++;
     lcd.clear();
@@ -74,10 +68,13 @@ void loop() {
     delay(2000);
   }
 
-  // Restaurar mensaje de bienvenida
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Bienvenido");
+
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
+}
 
   rfid.PICC_HaltA();
   rfid.PCD_StopCrypto1();
