@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "author": "Proyecto Integrador",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 76.8, "left": -187.16, "attrs": {} },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd",
+      "top": -70.4,
+      "left": 168.8,
+      "attrs": { "pins": "i2c" }
+    },
+    { "type": "wokwi-mfrc522", "id": "rfid", "top": 100, "left": 160, "attrs": {} },
+    { "type": "board-mfrc522", "id": "rfid1", "top": 179.75, "left": 166.64, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:3V3", "rfid:3.3V", "red", [ "h0" ] ],
+    [ "esp:GND.1", "rfid:GND", "black", [ "h0" ] ],
+    [ "esp:5", "rfid:SDA", "yellow", [ "h0" ] ],
+    [ "esp:17", "rfid:RST", "orange", [ "h0" ] ],
+    [ "esp:18", "rfid:SCK", "green", [ "h0" ] ],
+    [ "esp:19", "rfid:MISO", "blue", [ "h0" ] ],
+    [ "esp:23", "rfid:MOSI", "purple", [ "h0" ] ],
+    [ "esp:5V", "lcd:VCC", "black", [ "h0" ] ],
+    [ "esp:GND.2", "lcd:GND", "purple", [ "h0" ] ],
+    [ "esp:21", "lcd:SDA", "violet", [ "h0" ] ],
+    [ "esp:22", "lcd:SCL", "white", [ "h0" ] ],
+    [ "esp:3V3", "rfid1:3.3V", "green", [ "h-9.45", "v201.6", "h220.8", "v-19.2" ] ],
+    [ "esp:GND.2", "rfid1:GND", "black", [ "v-38.4", "h96", "v201.6" ] ],
+    [ "esp:23", "rfid1:MOSI", "cyan", [ "h57.6", "v124.8", "h9.6" ] ],
+    [ "esp:22", "rfid1:RST", "violet", [ "h48", "v144" ] ],
+    [ "esp:19", "rfid1:IRQ", "limegreen", [ "h86.4", "v86.4" ] ],
+    [ "esp:18", "rfid1:SCK", "orange", [ "h115.2", "v48" ] ],
+    [ "esp:18", "rfid1:SDA", "black", [ "h134.4", "v0" ] ]
+  ],
+  "dependencies": {}
+}
