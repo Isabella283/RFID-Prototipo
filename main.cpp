@@ -20,6 +20,9 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
 int contador_rechazos = 0;
+const unsigned long TIEMPO_BLOQUEO_RECHAZADA = 12000;
+String uidRechazadoBloqueado = "";
+unsigned long bloqueoRechazadaHasta = 0;
 
 WiFiClient espClient;
 
@@ -76,6 +79,20 @@ void loop() {
   }
   tarjetaLeida.toUpperCase();
 
+  if (tarjetaLeida == uidRechazadoBloqueado && millis() < bloqueoRechazadaHasta) {
+    Serial.print("Tarjeta rechazada temporalmente bloqueada: ");
+    Serial.println(tarjetaLeida);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Tarjeta bloqueada");
+    lcd.setCursor(0, 1);
+    lcd.print("Espere unos seg.");
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
+    delay(500);
+    return;
+  }
+
   Serial.print("UID leido: ");
   Serial.println(tarjetaLeida);
 
@@ -96,6 +113,8 @@ void loop() {
     digitalWrite(RELAY_PIN, LOW);
   } else {
     contador_rechazos++;
+    uidRechazadoBloqueado = tarjetaLeida;
+    bloqueoRechazadaHasta = millis() + TIEMPO_BLOQUEO_RECHAZADA;
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Acceso Denegado");
@@ -243,4 +262,8 @@ serializeJsonPretty(doc, output);
 Serial.println(output);
 
 }
+
+ 
+
+
 
